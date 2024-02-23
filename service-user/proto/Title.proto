@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package proto;
+
+service YourService {
+  rpc GetAll(ReadRequest) returns (ReadResponse);
+  rpc GetDropdown(ReadRequest) returns (ReadResponse);
+  rpc Create(Title) returns (CreateResponse);
+  rpc Update(Title) returns (UpdateResponse);
+  rpc Delete(Title) returns (DeleteResponse);
+}
+
+message Title {
+  int64 id = 1;
+  string name = 2;
+  string code = 3;
+  bool is_actived = 4;
+  bool is_deleted = 5;
+  string created_by = 6;
+  string created_at = 7;
+  string updated_by = 8;
+  string updated_at = 9;
+}
+
+message CreateRequest {
+  string data = 1;
+}
+
+message CreateResponse {
+  int64 id = 1;
+}
+
+message ReadRequest {
+  int64 id = 1;
+}
+
+message ReadResponse {
+  string data = 1;
+}
+
+message UpdateRequest {
+  int64 id = 1;
+  string data = 2;
+}
+
+message UpdateResponse {}
+
+message DeleteRequest {
+  int64 id = 1;
+}
+
+message DeleteResponse {}
