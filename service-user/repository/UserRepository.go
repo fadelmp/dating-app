@@ -9,21 +9,21 @@ import (
 )
 
 // Interface
-type UserRepositoryContract interface {
+type UserRepository interface {
 	GetByEmail(string) domain.User
 	Create(domain.User) (domain.User, error)
 	Update(domain.User) (domain.User, error)
 }
 
 // Class
-type UserRepository struct {
+type UserRepositoryImpl struct {
 	DB    *gorm.DB
 	Redis *redis.Client
 }
 
 // Constructor
-func NewUserRepository(DB *gorm.DB, Redis *redis.Client) *UserRepository {
-	return &UserRepository{
+func NewUserRepository(DB *gorm.DB, Redis *redis.Client) *UserRepositoryImpl {
+	return &UserRepositoryImpl{
 		DB:    DB,
 		Redis: Redis,
 	}
@@ -31,7 +31,7 @@ func NewUserRepository(DB *gorm.DB, Redis *redis.Client) *UserRepository {
 
 // Implementation
 
-func (r *UserRepository) GetByEmail(email string) domain.User {
+func (r *UserRepositoryImpl) GetByEmail(email string) domain.User {
 
 	var user domain.User
 
@@ -46,7 +46,7 @@ func (r *UserRepository) GetByEmail(email string) domain.User {
 	return user
 }
 
-func (r *UserRepository) Create(User domain.User) (domain.User, error) {
+func (r *UserRepositoryImpl) Create(User domain.User) (domain.User, error) {
 
 	// Create User
 	err := r.DB.Create(&User).Error
@@ -54,7 +54,7 @@ func (r *UserRepository) Create(User domain.User) (domain.User, error) {
 	return User, err
 }
 
-func (r *UserRepository) Update(User domain.User) (domain.User, error) {
+func (r *UserRepositoryImpl) Update(User domain.User) (domain.User, error) {
 
 	// Update User by id
 	err := r.DB.Model(&User).Update(&User).Error

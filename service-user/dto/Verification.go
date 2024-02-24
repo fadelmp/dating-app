@@ -8,6 +8,5 @@ import (
 type Verification struct {
 	dto.Base
 	Id      uint   `json:"id"`
-	Email   string `json:"email"`
 	OtpCode string `json:"otp_code"`
 }

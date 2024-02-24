@@ -10,23 +10,23 @@ import (
 )
 
 // Interface
-type SignUpHandlerContract interface {
+type UserHandler interface {
 	SignUp(e echo.Context) error
 }
 
 // Class
-type SignUpHandler struct {
-	usecase usecase.SignUpUsecaseContract
+type UserHandlerImpl struct {
+	usecase usecase.UserUsecase
 }
 
 // Constructor
-func NewSignUpHandler(usecase usecase.SignUpUsecaseContract) *SignUpHandler {
-	return &SignUpHandler{
+func NewUserHandler(usecase usecase.UserUsecase) *UserHandlerImpl {
+	return &UserHandlerImpl{
 		usecase: usecase,
 	}
 }
 
-func (h *SignUpHandler) SignUp(e echo.Context) error {
+func (h *UserHandlerImpl) SignUp(e echo.Context) error {
 
 	var signUp dto.SignUp
 

@@ -11,8 +11,8 @@ import (
 func Init(routes *echo.Echo, db *gorm.DB, redis *redis.Client) *echo.Echo {
 
 	// SignUp Route & Injection
-	signUp := injection.SignUpInjection(db, redis)
-	SignUpRoute(routes, signUp)
+	user := injection.UserInjection(db, redis)
+	UserRoute(routes, user)
 
 	return routes
 }

@@ -9,7 +9,7 @@ import (
 )
 
 // Interface
-type TempUserRepositoryContract interface {
+type TempUserRepository interface {
 	GetByEmail(string) domain.TempUser
 	Create(domain.TempUser) (domain.TempUser, error)
 	Update(domain.TempUser) (domain.TempUser, error)
@@ -17,14 +17,14 @@ type TempUserRepositoryContract interface {
 }
 
 // Class
-type TempUserRepository struct {
+type TempUserRepositoryImpl struct {
 	DB    *gorm.DB
 	Redis *redis.Client
 }
 
 // Constructor
-func NewTempUserRepository(DB *gorm.DB, Redis *redis.Client) *TempUserRepository {
-	return &TempUserRepository{
+func NewTempUserRepository(DB *gorm.DB, Redis *redis.Client) *TempUserRepositoryImpl {
+	return &TempUserRepositoryImpl{
 		DB:    DB,
 		Redis: Redis,
 	}
@@ -32,7 +32,7 @@ func NewTempUserRepository(DB *gorm.DB, Redis *redis.Client) *TempUserRepository
 
 // Implementation
 
-func (r *TempUserRepository) GetByEmail(email string) domain.TempUser {
+func (r *TempUserRepositoryImpl) GetByEmail(email string) domain.TempUser {
 
 	var tempUser domain.TempUser
 
@@ -47,7 +47,7 @@ func (r *TempUserRepository) GetByEmail(email string) domain.TempUser {
 	return tempUser
 }
 
-func (r *TempUserRepository) Create(tempUser domain.TempUser) (domain.TempUser, error) {
+func (r *TempUserRepositoryImpl) Create(tempUser domain.TempUser) (domain.TempUser, error) {
 
 	// Create User
 	err := r.DB.Create(&tempUser).Error
@@ -55,7 +55,7 @@ func (r *TempUserRepository) Create(tempUser domain.TempUser) (domain.TempUser, 
 	return tempUser, err
 }
 
-func (r *TempUserRepository) Update(tempUser domain.TempUser) (domain.TempUser, error) {
+func (r *TempUserRepositoryImpl) Update(tempUser domain.TempUser) (domain.TempUser, error) {
 
 	// Update User by id
 	err := r.DB.Model(&tempUser).Update(&tempUser).Error
@@ -63,7 +63,7 @@ func (r *TempUserRepository) Update(tempUser domain.TempUser) (domain.TempUser, 
 	return tempUser, err
 }
 
-func (r *TempUserRepository) Delete(tempUser domain.TempUser) error {
+func (r *TempUserRepositoryImpl) Delete(tempUser domain.TempUser) error {
 
 	// Delete Temp User by Id
 	return r.DB.Model(&tempUser).Delete(&tempUser).Error

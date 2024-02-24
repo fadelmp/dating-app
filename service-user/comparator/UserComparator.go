@@ -8,23 +8,23 @@ import (
 )
 
 // Interface
-type SignUpComparatorContract interface {
+type UserComparator interface {
 	CheckEmail(dto.SignUp) error
 	CheckTempEmail(dto.SignUp) error
 }
 
 // Class
-type SignUpComparator struct {
-	userRepo repository.UserRepositoryContract
-	tempRepo repository.TempUserRepositoryContract
+type UserComparatorImpl struct {
+	userRepo repository.UserRepository
+	tempRepo repository.TempUserRepository
 }
 
 // Constructor
-func NewSignUpComparator(
-	userRepo repository.UserRepositoryContract,
-	tempRepo repository.TempUserRepositoryContract,
-) *SignUpComparator {
-	return &SignUpComparator{
+func NewUserComparator(
+	userRepo repository.UserRepository,
+	tempRepo repository.TempUserRepository,
+) *UserComparatorImpl {
+	return &UserComparatorImpl{
 		userRepo: userRepo,
 		tempRepo: tempRepo,
 	}
@@ -32,7 +32,7 @@ func NewSignUpComparator(
 
 // Implementation
 
-func (c *SignUpComparator) CheckEmail(signUp dto.SignUp) error {
+func (c *UserComparatorImpl) CheckEmail(signUp dto.SignUp) error {
 
 	// Get data by name
 	SignUp := c.userRepo.GetByEmail(signUp.Email)
@@ -45,7 +45,7 @@ func (c *SignUpComparator) CheckEmail(signUp dto.SignUp) error {
 	return nil
 }
 
-func (c *SignUpComparator) CheckTempEmail(signUp dto.SignUp) error {
+func (c *UserComparatorImpl) CheckTempEmail(signUp dto.SignUp) error {
 
 	// Get data by Id
 	SignUp := c.tempRepo.GetByEmail(signUp.Email)

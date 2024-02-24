@@ -7,27 +7,26 @@ import (
 )
 
 // Interface
-type SignUpMapperContract interface {
+type UserMapper interface {
 	ToTempUser(dto.SignUp, sharedBase.Base) domain.TempUser
 }
 
 // Class
-type SignUpMapper struct {
+type UserMapperImpl struct {
 }
 
 // Constructor
-func NewSignUpMapper() *SignUpMapper {
-	return &SignUpMapper{}
+func NewUserMapper() *UserMapperImpl {
+	return &UserMapperImpl{}
 }
 
 // Implementation
 
-func (m *SignUpMapper) ToTempUser(signUp dto.SignUp, base sharedBase.Base) domain.TempUser {
+func (m *UserMapperImpl) ToTempUser(signUp dto.SignUp, base sharedBase.Base) domain.TempUser {
 
 	return domain.TempUser{
 		Email:      signUp.Email,
 		Password:   signUp.Password,
-		OtpCode:    "123456",
 		TryAttempt: 3,
 		Base:       base,
 	}

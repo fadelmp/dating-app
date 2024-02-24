@@ -11,15 +11,15 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func SignUpInjection(db *gorm.DB, redis *redis.Client) *handler.SignUpHandler {
+func UserInjection(db *gorm.DB, redis *redis.Client) *handler.UserHandlerImpl {
 
-	mapper := mapper.NewSignUpMapper()
+	mapper := mapper.NewUserMapper()
 	userRepo := repository.NewUserRepository(db, redis)
 	tempRepo := repository.NewTempUserRepository(db, redis)
 
-	comparator := comparator.NewSignUpComparator(userRepo, tempRepo)
-	usecase := usecase.NewSignUpUsecase(tempRepo, mapper, comparator)
-	handler := handler.NewSignUpHandler(usecase)
+	comparator := comparator.NewUserComparator(userRepo, tempRepo)
+	usecase := usecase.NewUserUsecase(tempRepo, mapper, comparator)
+	handler := handler.NewUserHandler(usecase)
 
 	return handler
 }
