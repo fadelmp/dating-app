@@ -7,7 +7,7 @@ import (
 // Payload Design
 type SignUp struct {
 	dto.Base
-	Id       uint   `json:"id"`
-	Email    string `json:"email" validate:"required, email"`
-	Password string `json:"password" validate:"required"`
+	Id       string `json:"id"`
+	Email    string `json:"email" validate:"required,email" validateErrorMsg:"Invalid Email Format"`
+	Password string `json:"password" validate:"required" validateErrorMsg:"Password Required"`
 }

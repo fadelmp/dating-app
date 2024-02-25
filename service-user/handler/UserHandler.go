@@ -5,7 +5,9 @@ import (
 	"dating-app/service-user/message"
 	"dating-app/service-user/usecase"
 	handler "dating-app/shared/handler"
+	"fmt"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
 
@@ -16,11 +18,11 @@ type UserHandler interface {
 
 // Class
 type UserHandlerImpl struct {
-	usecase usecase.UserUsecase
+	usecase usecase.SignUpUsecase
 }
 
 // Constructor
-func NewUserHandler(usecase usecase.UserUsecase) *UserHandlerImpl {
+func NewUserHandler(usecase usecase.SignUpUsecase) *UserHandlerImpl {
 	return &UserHandlerImpl{
 		usecase: usecase,
 	}
@@ -34,9 +36,20 @@ func (h *UserHandlerImpl) SignUp(e echo.Context) error {
 		return handler.BadRequest(e)
 	}
 
-	if err := h.usecase.SignUp(signUp); err != nil {
-		return handler.Error(e, message.TitleCreateFailed)
+	validate := validator.New()
+	err := validate.Struct(signUp)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			fmt.Println("Field:", err.Field())
+			fmt.Println("Error:", err.ActualTag())
+			fmt.Println("Message:", err.Param())
+			return handler.Error(e, err.Field()+" "+err.ActualTag()+" "+err.Param())
+		}
 	}
 
-	return handler.Success(e, "")
+	if err := h.usecase.SignUp(signUp); err != nil {
+		return handler.Error(e, err)
+	}
+
+	return handler.Success(e, message.SignUpSuccess)
 }

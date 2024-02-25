@@ -11,6 +11,7 @@ import (
 type UserComparator interface {
 	CheckEmail(dto.SignUp) error
 	CheckTempEmail(dto.SignUp) error
+	CheckTempId(dto.Verification) error
 }
 
 // Class
@@ -38,7 +39,7 @@ func (c *UserComparatorImpl) CheckEmail(signUp dto.SignUp) error {
 	SignUp := c.userRepo.GetByEmail(signUp.Email)
 
 	// Return error if data exists
-	if SignUp.Id != 0 {
+	if SignUp.Id != "" {
 		return errors.New(message.EmailExists)
 	}
 
@@ -47,11 +48,24 @@ func (c *UserComparatorImpl) CheckEmail(signUp dto.SignUp) error {
 
 func (c *UserComparatorImpl) CheckTempEmail(signUp dto.SignUp) error {
 
-	// Get data by Id
+	// Get Data By Email
 	SignUp := c.tempRepo.GetByEmail(signUp.Email)
 
 	// Return error if data not found
-	if SignUp.Id != 0 {
+	if SignUp.Id != "" {
+		return errors.New(message.EmailBeingVerified)
+	}
+
+	return nil
+}
+
+func (c *UserComparatorImpl) CheckTempId(verify dto.Verification) error {
+
+	// Get Data By Id
+	tempUser := c.tempRepo.GetById(verify.Id)
+
+	// Return error if data not found
+	if tempUser.Id == "" {
 		return errors.New(message.EmailBeingVerified)
 	}
 

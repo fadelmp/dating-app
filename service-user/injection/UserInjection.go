@@ -18,7 +18,7 @@ func UserInjection(db *gorm.DB, redis *redis.Client) *handler.UserHandlerImpl {
 	tempRepo := repository.NewTempUserRepository(db, redis)
 
 	comparator := comparator.NewUserComparator(userRepo, tempRepo)
-	usecase := usecase.NewUserUsecase(tempRepo, mapper, comparator)
+	usecase := usecase.NewSignUpUsecase(tempRepo, mapper, comparator)
 	handler := handler.NewUserHandler(usecase)
 
 	return handler

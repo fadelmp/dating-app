@@ -7,6 +7,6 @@ import (
 // Payload Design
 type Verification struct {
 	dto.Base
-	Id      uint   `json:"id"`
-	OtpCode string `json:"otp_code"`
+	Id      string `json:"id" validate:"required"`
+	OtpCode string `json:"otp_code" validate:"required,len=6" validateErrorMsg:"Invalid OTP Code"`
 }

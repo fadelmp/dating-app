@@ -2,13 +2,12 @@ package mapper
 
 import (
 	"dating-app/service-user/domain"
-	"dating-app/service-user/dto"
 	sharedBase "dating-app/shared/domain"
 )
 
 // Interface
 type UserMapper interface {
-	ToTempUser(dto.SignUp, sharedBase.Base) domain.TempUser
+	ToTempUser(string, string, string, string, sharedBase.Base) domain.TempUser
 }
 
 // Class
@@ -22,11 +21,18 @@ func NewUserMapper() *UserMapperImpl {
 
 // Implementation
 
-func (m *UserMapperImpl) ToTempUser(signUp dto.SignUp, base sharedBase.Base) domain.TempUser {
+func (m *UserMapperImpl) ToTempUser(
+	id string,
+	email string,
+	password string,
+	otpCode string,
+	base sharedBase.Base) domain.TempUser {
 
 	return domain.TempUser{
-		Email:      signUp.Email,
-		Password:   signUp.Password,
+		Id:         id,
+		Email:      email,
+		Password:   password,
+		OtpCode:    otpCode,
 		TryAttempt: 3,
 		Base:       base,
 	}

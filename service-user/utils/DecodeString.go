@@ -1,15 +1,19 @@
 package utils
 
-import "strconv"
+import (
+	"encoding/base64"
+)
 
 // DecodeBase64 decodes a base64-encoded string to its original content
-func DecodeString(encodedString string) (string, error) {
+func DecodeString(encodedPass string) (string, error) {
 
-	decodedString, err := strconv.Unquote(`"` + encodedString + `"`)
+	// Decode the Base64 encoded string
+	decoded, err := base64.StdEncoding.DecodeString(encodedPass)
 
 	if err != nil {
 		return "", err
 	}
 
-	return decodedString, nil
+	// Convert the decoded bytes to a string
+	return string(decoded), nil
 }

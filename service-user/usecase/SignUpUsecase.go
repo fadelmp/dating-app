@@ -4,29 +4,32 @@ import (
 	"dating-app/service-user/comparator"
 	"dating-app/service-user/dto"
 	"dating-app/service-user/mapper"
+	"dating-app/service-user/message"
 	"dating-app/service-user/repository"
 	"dating-app/service-user/utils"
 	sharedDomain "dating-app/shared/domain"
+	sharedUtils "dating-app/shared/utils"
+	"errors"
 )
 
 // Interface
-type UserUsecase interface {
+type SignUpUsecase interface {
 	SignUp(dto.SignUp) error
 }
 
 // Class
-type UserUsecaseImpl struct {
+type SignUpUsecaseImpl struct {
 	mapper     mapper.UserMapper
 	comparator comparator.UserComparator
 	repo       repository.TempUserRepository
 }
 
 // Constructor
-func NewUserUsecase(
+func NewSignUpUsecase(
 	repo repository.TempUserRepository,
 	mapper mapper.UserMapper,
-	comparator comparator.UserComparator) *UserUsecaseImpl {
-	return &UserUsecaseImpl{
+	comparator comparator.UserComparator) *SignUpUsecaseImpl {
+	return &SignUpUsecaseImpl{
 		repo:       repo,
 		mapper:     mapper,
 		comparator: comparator,
@@ -35,7 +38,7 @@ func NewUserUsecase(
 
 // Implementation
 
-func (u *UserUsecaseImpl) SignUp(signUpDto dto.SignUp) error {
+func (u *SignUpUsecaseImpl) SignUp(signUpDto dto.SignUp) error {
 
 	// Check Email Whether Exists
 	if err := u.comparator.CheckEmail(signUpDto); err != nil {
@@ -47,34 +50,42 @@ func (u *UserUsecaseImpl) SignUp(signUpDto dto.SignUp) error {
 		return err
 	}
 
-	// Create Base data
-	base := sharedDomain.Create(signUpDto.Email)
-
-	// Decode Password
+	// Decode Password from the Encoded Password
 	decodedPass, err := utils.DecodeString(signUpDto.Password)
 	if err != nil {
-		return err
+		return errors.New(message.SignUpFailed)
 	}
 
 	// Hash Password
 	hashPass, err := utils.HashPassword(decodedPass)
 	if err != nil {
-		return err
+		return errors.New(message.SignUpFailed)
 	}
 
-	signUpDto.Password = hashPass
+	// Generate OTP Code
+	otpCode, err := utils.GenerateOTP()
+	if err != nil {
+		return errors.New(message.SignUpFailed)
+	}
+
+	// Generate UUID
+	id, err := sharedUtils.GenerateUUID()
+	if err != nil {
+		return errors.New(message.SignUpFailed)
+	}
+
+	// Create Base data
+	base := sharedDomain.Create(signUpDto.Email)
 
 	// Map SignUp dto to Temp User domain
-	tempUser := u.mapper.ToTempUser(signUpDto, base)
-
-	// Put OTP Code
-	tempUser.OtpCode, err = utils.GenerateOTP()
-	if err != nil {
-		return err
-	}
+	tempUser := u.mapper.ToTempUser(id, signUpDto.Email, hashPass, otpCode, base)
 
 	// Create Temp User and return
-	_, err = u.repo.Create(tempUser)
+	if _, err := u.repo.Create(tempUser); err != nil {
+		return errors.New(message.SignUpFailed)
+	}
 
-	return err
+	// Send this to Mail Server to Send the Otp Code
+
+	return nil
 }

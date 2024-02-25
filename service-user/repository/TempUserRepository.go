@@ -10,6 +10,7 @@ import (
 
 // Interface
 type TempUserRepository interface {
+	GetById(string) domain.TempUser
 	GetByEmail(string) domain.TempUser
 	Create(domain.TempUser) (domain.TempUser, error)
 	Update(domain.TempUser) (domain.TempUser, error)
@@ -31,6 +32,21 @@ func NewTempUserRepository(DB *gorm.DB, Redis *redis.Client) *TempUserRepository
 }
 
 // Implementation
+
+func (r *TempUserRepositoryImpl) GetById(id string) domain.TempUser {
+
+	var tempUser domain.TempUser
+
+	keys := "temp_user_id_" + id
+	query := r.DB.Model(&tempUser).
+		Where("is_deleted=?", false).
+		Where("id=?", id).
+		Find(&tempUser)
+
+	config.Query(r.Redis, query, keys)
+
+	return tempUser
+}
 
 func (r *TempUserRepositoryImpl) GetByEmail(email string) domain.TempUser {
 
