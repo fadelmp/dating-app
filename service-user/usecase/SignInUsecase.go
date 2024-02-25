@@ -13,23 +13,23 @@ import (
 )
 
 // Interface
-type SignUpUsecase interface {
-	SignUp(dto.Sign) (string, error)
+type SignInUsecase interface {
+	SignIn(dto.Sign) (string, error)
 }
 
 // Class
-type SignUpUsecaseImpl struct {
+type SignInUsecaseImpl struct {
 	mapper     mapper.UserMapper
 	comparator comparator.UserComparator
 	repo       repository.TempUserRepository
 }
 
 // Constructor
-func NewSignUpUsecase(
+func NewSignInUsecase(
 	repo repository.TempUserRepository,
 	mapper mapper.UserMapper,
-	comparator comparator.UserComparator) *SignUpUsecaseImpl {
-	return &SignUpUsecaseImpl{
+	comparator comparator.UserComparator) *SignInUsecaseImpl {
+	return &SignInUsecaseImpl{
 		repo:       repo,
 		mapper:     mapper,
 		comparator: comparator,
@@ -38,52 +38,52 @@ func NewSignUpUsecase(
 
 // Implementation
 
-func (u *SignUpUsecaseImpl) SignUp(signDto dto.Sign) (string, error) {
+func (u *SignInUsecaseImpl) SignIn(SignInDto dto.Sign) (string, error) {
 
 	// Check Email Whether Exists
-	if err := u.comparator.CheckEmail(signDto.Email); err != nil {
+	if err := u.comparator.CheckEmail(SignInDto.Email); err != nil {
 		return "", err
 	}
 
 	// Check Email Whether Being Verified
-	if err := u.comparator.CheckTempEmail(signDto.Email); err != nil {
+	if err := u.comparator.CheckTempEmail(SignInDto.Email); err != nil {
 		return "", err
 	}
 
 	// Decode Password from the Encoded Password
-	decodedPass, err := utils.DecodeString(signDto.Password)
+	decodedPass, err := utils.DecodeString(SignInDto.Password)
 	if err != nil {
-		return "", errors.New(message.SignUpFailed)
+		return "", errors.New(message.SignInFailed)
 	}
 
 	// Hash Password
 	hashPass, err := utils.HashPassword(decodedPass)
 	if err != nil {
-		return "", errors.New(message.SignUpFailed)
+		return "", errors.New(message.SignInFailed)
 	}
 
 	// Generate OTP Code
 	otpCode, err := utils.GenerateOTP()
 	if err != nil {
-		return "", errors.New(message.SignUpFailed)
+		return "", errors.New(message.SignInFailed)
 	}
 
 	// Generate UUID
 	id, err := sharedUtils.GenerateUUID()
 	if err != nil {
-		return "", errors.New(message.SignUpFailed)
+		return "", errors.New(message.SignInFailed)
 	}
 
 	// Create Base data
-	base := sharedDomain.Create(signDto.Email)
+	base := sharedDomain.Create(SignInDto.Email)
 
-	// Map SignUp dto to Temp User domain
-	tempUser := u.mapper.ToTempUser(id, signDto.Email, hashPass, otpCode, base)
+	// Map SignIn dto to Temp User domain
+	tempUser := u.mapper.ToTempUser(id, SignInDto.Email, hashPass, otpCode, base)
 
 	// Create Temp User and return
 	tempUserRow, err := u.repo.Create(tempUser)
 	if err != nil {
-		return "", errors.New(message.SignUpFailed)
+		return "", errors.New(message.SignInFailed)
 	}
 
 	// Send this to Mail Server to Send the Otp Code
