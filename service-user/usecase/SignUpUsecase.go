@@ -14,7 +14,7 @@ import (
 
 // Interface
 type SignUpUsecase interface {
-	SignUp(dto.SignUp) error
+	SignUp(dto.SignUp) (string, error)
 }
 
 // Class
@@ -38,40 +38,40 @@ func NewSignUpUsecase(
 
 // Implementation
 
-func (u *SignUpUsecaseImpl) SignUp(signUpDto dto.SignUp) error {
+func (u *SignUpUsecaseImpl) SignUp(signUpDto dto.SignUp) (string, error) {
 
 	// Check Email Whether Exists
-	if err := u.comparator.CheckEmail(signUpDto); err != nil {
-		return err
+	if err := u.comparator.CheckEmail(signUpDto.Email); err != nil {
+		return "", err
 	}
 
 	// Check Email Whether Being Verified
-	if err := u.comparator.CheckTempEmail(signUpDto); err != nil {
-		return err
+	if err := u.comparator.CheckTempEmail(signUpDto.Email); err != nil {
+		return "", err
 	}
 
 	// Decode Password from the Encoded Password
 	decodedPass, err := utils.DecodeString(signUpDto.Password)
 	if err != nil {
-		return errors.New(message.SignUpFailed)
+		return "", errors.New(message.SignUpFailed)
 	}
 
 	// Hash Password
 	hashPass, err := utils.HashPassword(decodedPass)
 	if err != nil {
-		return errors.New(message.SignUpFailed)
+		return "", errors.New(message.SignUpFailed)
 	}
 
 	// Generate OTP Code
 	otpCode, err := utils.GenerateOTP()
 	if err != nil {
-		return errors.New(message.SignUpFailed)
+		return "", errors.New(message.SignUpFailed)
 	}
 
 	// Generate UUID
 	id, err := sharedUtils.GenerateUUID()
 	if err != nil {
-		return errors.New(message.SignUpFailed)
+		return "", errors.New(message.SignUpFailed)
 	}
 
 	// Create Base data
@@ -81,11 +81,12 @@ func (u *SignUpUsecaseImpl) SignUp(signUpDto dto.SignUp) error {
 	tempUser := u.mapper.ToTempUser(id, signUpDto.Email, hashPass, otpCode, base)
 
 	// Create Temp User and return
-	if _, err := u.repo.Create(tempUser); err != nil {
-		return errors.New(message.SignUpFailed)
+	tempUserRow, err := u.repo.Create(tempUser)
+	if err != nil {
+		return "", errors.New(message.SignUpFailed)
 	}
 
 	// Send this to Mail Server to Send the Otp Code
 
-	return nil
+	return tempUserRow.Id, nil
 }

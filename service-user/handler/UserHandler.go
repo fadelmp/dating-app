@@ -5,7 +5,6 @@ import (
 	"dating-app/service-user/message"
 	"dating-app/service-user/usecase"
 	handler "dating-app/shared/handler"
-	"fmt"
 
 	"github.com/labstack/echo/v4"
 )
@@ -46,10 +45,10 @@ func (h *UserHandlerImpl) SignUp(e echo.Context) error {
 	// 	}
 	// }
 
-	if err := h.usecase.SignUp(signUp); err != nil {
-		fmt.Println(err)
+	result, err := h.usecase.SignUp(signUp)
+	if err != nil {
 		return handler.Error(e, err.Error())
 	}
 
-	return handler.Success(e, message.SignUpSuccess, "")
+	return handler.Success(e, message.SignUpSuccess, result)
 }
