@@ -1,6 +1,7 @@
 package comparator
 
 import (
+	"dating-app/service-user/domain"
 	"dating-app/service-user/dto"
 	"dating-app/service-user/message"
 	"dating-app/service-user/repository"
@@ -11,7 +12,8 @@ import (
 type UserComparator interface {
 	CheckEmail(string) error
 	CheckTempEmail(string) error
-	CheckTempId(dto.Verify) error
+	CheckTempId(string) error
+	CheckOtpCode(verifyDto dto.Verify, tempUser domain.TempUser) error
 }
 
 // Class
@@ -59,14 +61,21 @@ func (c *UserComparatorImpl) CheckTempEmail(email string) error {
 	return nil
 }
 
-func (c *UserComparatorImpl) CheckTempId(verify dto.Verify) error {
-
-	// Get Data By Id
-	tempUser := c.tempRepo.GetById(verify.Id)
+func (c *UserComparatorImpl) CheckTempId(id string) error {
 
 	// Return error if data not found
-	if tempUser.Id == "" {
-		return errors.New(message.EmailBeingVerified)
+	if id == "" {
+		return errors.New(message.EmailNotFound)
+	}
+
+	return nil
+}
+
+func (c *UserComparatorImpl) CheckOtpCode(verifyDto dto.Verify, tempUser domain.TempUser) error {
+
+	// Check OTP Code
+	if verifyDto.OtpCode != tempUser.OtpCode {
+		return errors.New(message.WrongOtpCode)
 	}
 
 	return nil

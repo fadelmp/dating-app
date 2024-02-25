@@ -12,17 +12,23 @@ import (
 // Interface
 type UserHandler interface {
 	SignUp(e echo.Context) error
+	VerifyEmail(e echo.Context) error
 }
 
 // Class
 type UserHandlerImpl struct {
-	usecase usecase.SignUpUsecase
+	signUpUsecase usecase.SignUpUsecase
+	verifyUsecase usecase.VerifyUsecase
 }
 
 // Constructor
-func NewUserHandler(usecase usecase.SignUpUsecase) *UserHandlerImpl {
+func NewUserHandler(
+	signUpUsecase usecase.SignUpUsecase,
+	verifyUsecase usecase.VerifyUsecase,
+) *UserHandlerImpl {
 	return &UserHandlerImpl{
-		usecase: usecase,
+		signUpUsecase: signUpUsecase,
+		verifyUsecase: verifyUsecase,
 	}
 }
 
@@ -34,21 +40,25 @@ func (h *UserHandlerImpl) SignUp(e echo.Context) error {
 		return handler.BadRequest(e)
 	}
 
-	// validate := validator.New()
-	// err := validate.Struct(signUp)
-	// if err != nil {
-	// 	for _, err := range err.(validator.ValidationErrors) {
-	// 		fmt.Println("Field:", err.Field())
-	// 		fmt.Println("Error:", err.ActualTag())
-	// 		fmt.Println("Message:", err.Param())
-	// 		return handler.Error(e, err.Field()+" "+err.ActualTag()+" "+err.Param())
-	// 	}
-	// }
-
-	result, err := h.usecase.SignUp(signUp)
+	result, err := h.signUpUsecase.SignUp(signUp)
 	if err != nil {
 		return handler.Error(e, err.Error())
 	}
 
 	return handler.Success(e, message.SignUpSuccess, result)
+}
+
+func (h *UserHandlerImpl) VerifyEmail(e echo.Context) error {
+
+	var verify dto.Verify
+
+	if e.Bind(&verify) != nil {
+		return handler.BadRequest(e)
+	}
+
+	if err := h.verifyUsecase.VerifyEmail(verify); err != nil {
+		return handler.Error(e, err.Error())
+	}
+
+	return handler.Success(e, message.VerifySuccess, "")
 }

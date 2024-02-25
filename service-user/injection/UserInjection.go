@@ -13,13 +13,16 @@ import (
 
 func UserInjection(db *gorm.DB, redis *redis.Client) *handler.UserHandlerImpl {
 
-	mapper := mapper.NewUserMapper()
 	userRepo := repository.NewUserRepository(db, redis)
 	tempRepo := repository.NewTempUserRepository(db, redis)
 
+	mapper := mapper.NewUserMapper()
 	comparator := comparator.NewUserComparator(userRepo, tempRepo)
-	usecase := usecase.NewSignUpUsecase(tempRepo, mapper, comparator)
-	handler := handler.NewUserHandler(usecase)
+
+	signUpUsecase := usecase.NewSignUpUsecase(tempRepo, mapper, comparator)
+	verifyUsecase := usecase.NewVerifyUsecase(tempRepo, userRepo, mapper, comparator)
+
+	handler := handler.NewUserHandler(signUpUsecase, verifyUsecase)
 
 	return handler
 }
