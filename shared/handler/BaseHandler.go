@@ -17,10 +17,10 @@ func CreateResponse(c echo.Context, httpCode int, response dto.Response) error {
 	return c.JSONPretty(httpCode, response, "  ")
 }
 
-func Success(c echo.Context, data interface{}) error {
+func Success(c echo.Context, messages interface{}, data interface{}) error {
 
 	httpCode := 200
-	resp := &dto.Response{Messages: message.GetSuccess, Data: data}
+	resp := &dto.Response{Messages: messages, Data: data}
 
 	return CreateResponse(c, httpCode, *resp)
 }
@@ -28,7 +28,7 @@ func Success(c echo.Context, data interface{}) error {
 func Error(c echo.Context, messages interface{}) error {
 
 	httpCode := 500
-	resp := &dto.Response{Messages: messages}
+	resp := &dto.Response{Messages: messages, Data: nil}
 
 	return CreateResponse(c, httpCode, *resp)
 }
