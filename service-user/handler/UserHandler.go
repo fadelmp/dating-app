@@ -12,40 +12,60 @@ import (
 // Interface
 type UserHandler interface {
 	SignUp(e echo.Context) error
+	SignIn(e echo.Context) error
 	VerifyEmail(e echo.Context) error
 }
 
 // Class
 type UserHandlerImpl struct {
 	signUpUsecase usecase.SignUpUsecase
+	signInUsecase usecase.SignInUsecase
 	verifyUsecase usecase.VerifyUsecase
 }
 
 // Constructor
 func NewUserHandler(
 	signUpUsecase usecase.SignUpUsecase,
+	signInUsecase usecase.SignInUsecase,
 	verifyUsecase usecase.VerifyUsecase,
 ) *UserHandlerImpl {
 	return &UserHandlerImpl{
 		signUpUsecase: signUpUsecase,
+		signInUsecase: signInUsecase,
 		verifyUsecase: verifyUsecase,
 	}
 }
 
 func (h *UserHandlerImpl) SignUp(e echo.Context) error {
 
-	var signUp dto.SignUp
+	var sign dto.Sign
 
-	if e.Bind(&signUp) != nil {
+	if e.Bind(&sign) != nil {
 		return handler.BadRequest(e)
 	}
 
-	result, err := h.signUpUsecase.SignUp(signUp)
+	result, err := h.signUpUsecase.SignUp(sign)
 	if err != nil {
 		return handler.Error(e, err.Error())
 	}
 
 	return handler.Success(e, message.SignUpSuccess, result)
+}
+
+func (h *UserHandlerImpl) SignIn(e echo.Context) error {
+
+	var sign dto.Sign
+
+	if e.Bind(&sign) != nil {
+		return handler.BadRequest(e)
+	}
+
+	result, err := h.signInUsecase.SignIn(sign)
+	if err != nil {
+		return handler.Error(e, err.Error())
+	}
+
+	return handler.Success(e, message.SignInSuccess, result)
 }
 
 func (h *UserHandlerImpl) VerifyEmail(e echo.Context) error {

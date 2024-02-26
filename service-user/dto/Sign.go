@@ -7,7 +7,6 @@ import (
 // Payload Design
 type Sign struct {
 	dto.Base
-	Id           string `json:"id"`
 	Email        string `json:"email" validate:"required,email" validateErrorMsg:"Invalid Email Format"`
 	Password     string `json:"password" validate:"required" validateErrorMsg:"Password Required"`
 	RefreshToken string `json:"refresh_token"`

@@ -8,25 +8,24 @@ import (
 	"dating-app/service-user/repository"
 	"dating-app/service-user/utils"
 	sharedDomain "dating-app/shared/domain"
-	sharedUtils "dating-app/shared/utils"
 	"errors"
 )
 
 // Interface
 type SignInUsecase interface {
-	SignIn(dto.Sign) (string, error)
+	SignIn(dto.Sign) (dto.Sign, error)
 }
 
 // Class
 type SignInUsecaseImpl struct {
 	mapper     mapper.UserMapper
 	comparator comparator.UserComparator
-	repo       repository.TempUserRepository
+	repo       repository.UserRepository
 }
 
 // Constructor
 func NewSignInUsecase(
-	repo repository.TempUserRepository,
+	repo repository.UserRepository,
 	mapper mapper.UserMapper,
 	comparator comparator.UserComparator) *SignInUsecaseImpl {
 	return &SignInUsecaseImpl{
@@ -38,55 +37,43 @@ func NewSignInUsecase(
 
 // Implementation
 
-func (u *SignInUsecaseImpl) SignIn(SignInDto dto.Sign) (string, error) {
-
-	// Check Email Whether Exists
-	if err := u.comparator.CheckEmail(SignInDto.Email); err != nil {
-		return "", err
-	}
-
-	// Check Email Whether Being Verified
-	if err := u.comparator.CheckTempEmail(SignInDto.Email); err != nil {
-		return "", err
-	}
+func (u *SignInUsecaseImpl) SignIn(signDto dto.Sign) (dto.Sign, error) {
 
 	// Decode Password from the Encoded Password
-	decodedPass, err := utils.DecodeString(SignInDto.Password)
+	decodedPass, err := utils.DecodeString(signDto.Password)
 	if err != nil {
-		return "", errors.New(message.SignInFailed)
+		return signDto, errors.New(message.SignInFailed)
 	}
 
 	// Hash Password
 	hashPass, err := utils.HashPassword(decodedPass)
 	if err != nil {
-		return "", errors.New(message.SignInFailed)
+		return signDto, errors.New(message.SignInFailed)
 	}
 
-	// Generate OTP Code
-	otpCode, err := utils.GenerateOTP()
-	if err != nil {
-		return "", errors.New(message.SignInFailed)
-	}
+	// Get User By Email
+	user := u.repo.GetByEmail(signDto.Email)
 
-	// Generate UUID
-	id, err := sharedUtils.GenerateUUID()
-	if err != nil {
-		return "", errors.New(message.SignInFailed)
+	// Check Login Data
+	if err := u.comparator.CheckLogin(user, hashPass); err != nil {
+		return signDto, err
 	}
 
 	// Create Base data
-	base := sharedDomain.Create(SignInDto.Email)
+	base := sharedDomain.Update(signDto.Email)
 
 	// Map SignIn dto to Temp User domain
-	tempUser := u.mapper.ToTempUser(id, SignInDto.Email, hashPass, otpCode, base)
+	user = u.mapper.Login(user, base)
 
-	// Create Temp User and return
-	tempUserRow, err := u.repo.Create(tempUser)
-	if err != nil {
-		return "", errors.New(message.SignInFailed)
+	// Update User Data
+	if _, err := u.repo.Update(user); err != nil {
+		return signDto, errors.New(message.SignInFailed)
 	}
 
-	// Send this to Mail Server to Send the Otp Code
+	// Generate Access and Token Refresh
+	signDto.Password = ""
+	signDto.AccessToken, _ = utils.AccessToken(user.Id, user.Email)
+	signDto.RefreshToken, _ = utils.RefreshToken(user.Id, user.Email)
 
-	return tempUserRow.Id, nil
+	return signDto, nil
 }

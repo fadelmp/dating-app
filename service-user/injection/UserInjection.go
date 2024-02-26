@@ -20,9 +20,10 @@ func UserInjection(db *gorm.DB, redis *redis.Client) *handler.UserHandlerImpl {
 	comparator := comparator.NewUserComparator(userRepo, tempRepo)
 
 	signUpUsecase := usecase.NewSignUpUsecase(tempRepo, mapper, comparator)
+	signInUsecase := usecase.NewSignInUsecase(userRepo, mapper, comparator)
 	verifyUsecase := usecase.NewVerifyUsecase(tempRepo, userRepo, mapper, comparator)
 
-	handler := handler.NewUserHandler(signUpUsecase, verifyUsecase)
+	handler := handler.NewUserHandler(signUpUsecase, signInUsecase, verifyUsecase)
 
 	return handler
 }

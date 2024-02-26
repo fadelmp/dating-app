@@ -11,8 +11,9 @@ import (
 // Interface
 type UserComparator interface {
 	CheckEmail(string) error
-	CheckTempEmail(string) error
 	CheckTempId(string) error
+	CheckTempEmail(string) error
+	CheckLogin(domain.User, string) error
 	CheckOtpCode(verifyDto dto.Verify, tempUser domain.TempUser) error
 }
 
@@ -76,6 +77,19 @@ func (c *UserComparatorImpl) CheckOtpCode(verifyDto dto.Verify, tempUser domain.
 	// Check OTP Code
 	if verifyDto.OtpCode != tempUser.OtpCode {
 		return errors.New(message.WrongOtpCode)
+	}
+
+	return nil
+}
+
+func (c *UserComparatorImpl) CheckLogin(user domain.User, password string) error {
+
+	if user.Id == "" {
+		return errors.New(message.EmailNotFound)
+	}
+
+	if user.Password != password {
+		return errors.New(message.WrongPassword)
 	}
 
 	return nil

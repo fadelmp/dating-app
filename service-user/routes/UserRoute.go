@@ -11,6 +11,7 @@ func UserRoute(routes *echo.Echo, handler *handler.UserHandlerImpl) {
 	user := routes.Group("/user")
 	{
 		user.POST("/sign-up", handler.SignUp)
+		user.POST("/sign-in", handler.SignIn)
 		user.POST("/verify", handler.VerifyEmail)
 	}
 }
